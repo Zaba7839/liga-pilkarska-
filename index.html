@@ -109,7 +109,7 @@
       <br>
       <label>Liczba drużyn: <input type="number" id="teamCount" min="2" max="128"></label><br>
       <label>Nazwa tabeli: <input type="text" id="tableName"></label><br>
-      <button id="createButton">Dalej</button>
+      <button id="createButton">Utwórz</button>
     </div>
 
     <div class="table-container" id="output"></div>
@@ -128,7 +128,7 @@
       selectedMode = e.target.value;
     });
 
-    // Powiązanie przycisku "Utwórz"
+    // Nasłuchiwanie na kliknięcie przycisku "Utwórz"
     document.getElementById('createButton').addEventListener('click', generateTeamInputs);
 
     function generateTeamInputs() {
@@ -138,13 +138,14 @@
         alert("Proszę podać nazwę tabeli!");
         return;
       }
-      
+
+      // Tworzenie inputów dla drużyn
       const form = document.getElementById('form-container');
-      form.innerHTML = '';
+      form.innerHTML = '';  // Usuwanie poprzednich danych formularza
       for (let i = 0; i < count; i++) {
         form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
       }
-      form.innerHTML += '<button type="button" onclick="startSystem()">Utwórz</button>';
+      form.innerHTML += '<button type="button" onclick="startSystem()">Utwórz tabelę</button>';
     }
 
     function startSystem() {
@@ -268,6 +269,7 @@
   </script>
 </body>
 </html>
+
 
 
 
