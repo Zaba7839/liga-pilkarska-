@@ -137,7 +137,103 @@
       
       const form = document.getElementById('teamForm');
       form.innerHTML = '';
-      for (let i = 0; i
+      for (let i = 0; i < count; i++) {
+        form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
+      }
+      form.innerHTML += '<button type="submit">Utwórz</button>';
+    }
+
+    function startSystem(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const teams = [];
+      for (let pair of formData.entries()) {
+        teams.push({ name: pair[1], pts: 0, scored: 0, conceded: 0, matches: [] });
+      }
+
+      const tableName = document.getElementById('tableName').value;
+      tables.push({ name: tableName, teams: teams });
+
+      if (selectedMode === 'classic') {
+        displayTable(teams, tableName);
+      } else {
+        displayBracket(teams);
+      }
+
+      updateSavedTables();
+      document.getElementById('teamForm').innerHTML = ''; // Ukrycie formularza
+      document.getElementById('modeSelect').disabled = true; // Zablokowanie trybu po utworzeniu
+      document.getElementById('teamCount').disabled = true;
+      document.getElementById('tableName').disabled = true;
+    }
+
+    function displayTable(teams, tableName) {
+      const container = document.getElementById('output');
+      teams.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.scored !== a.scored) return b.scored - a.scored;
+        return a.conceded - b.conceded;
+      });
+
+      let html = `<h3>${tableName}</h3><table><tr><th>#</th><th>Drużyna</th><th>Punkty</th><th>Strzelone</th><th>Stracone</th><th>Rozegrała mecze</th></tr>`;
+      teams.forEach((team, index) => {
+        html += `<tr><td>${index + 1}</td><td><button onclick="showTeamDetails(${index}, '${tableName}')">${team.name}</button></td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td><td>${team.matches.length}</td></tr>`;
+      });
+      html += '</table><button onclick="nextRound(teams)">Gotowe</button>';
+      container.innerHTML = html;
+    }
+
+    function showTeamDetails(index, tableName) {
+      const team = tables.find(table => table.name === tableName).teams[index];
+      const container = document.getElementById('output');
+      let details = `<div class="team-detail"><h3>${team.name}</h3><ul>`;
+      team.matches.forEach(match => {
+        details += `<li>${match.opponent}: ${match.result} (Wynik: ${match.score})</li>`;
+      });
+      details += '</ul></div>';
+      container.innerHTML = details;
+    }
+
+    function nextRound(teams) {
+      const container = document.getElementById('output');
+      container.innerHTML = '<h3>Przeniesiono do następnej rundy!</h3>';
+      displayTable(teams, "Kolejna runda"); // Zaktualizowana tabela po przeniesieniu do kolejnej rundy
+    }
+
+    function updateSavedTables() {
+      const tableList = document.getElementById('tableList');
+      tableList.innerHTML = '';
+      tables.forEach(table => {
+        tableList.innerHTML += `<li>${table.name}</li>`;
+      });
+    }
+
+    function displayBracket(teams) {
+      const container = document.getElementById('output');
+      container.innerHTML = '<div class="bracket">';
+      for (let i = 0; i < teams.length; i += 2) {
+        const team1 = teams[i]?.name || '---';
+        const team2 = teams[i + 1]?.name || '---';
+        container.innerHTML += `
+          <div class="match">
+            <div>${team1} vs ${team2}</div>
+            <input type="text" placeholder="Kto wygrał"><br>
+            <input type="text" placeholder="Wynik">
+          </div>
+        `;
+      }
+      container.innerHTML += '</div><button onclick="nextRoundBracket(teams)">Gotowe</button>';
+    }
+
+    function nextRoundBracket(teams) {
+      const container = document.getElementById('output');
+      container.innerHTML = '<h3>Przeniesiono do kolejnej rundy!</h3>';
+      displayBracket(teams); // Kolejna runda w drabince
+    }
+  </script>
+</body>
+</html>
+
 
 
 
