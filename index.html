@@ -1,275 +1,142 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperLiga 2025</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Ligowy</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fff;
-      color: #222;
+      background-color: #111;
+      color: #ffce00;
+      font-family: 'Arial', sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
     }
-    h1, h2 {
+    header {
+      background-color: #000;
+      padding: 1em;
       text-align: center;
-      color: #111;
-    }
-    .form, .bracket-setup {
-      background: #ffeb3b;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      max-width: 800px;
-      margin: 0 auto 30px;
-    }
-    .form input, .form select, .form button, .bracket-setup input, .bracket-setup select, .bracket-setup button {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #222;
-      border-radius: 5px;
-    }
-    .form button, .bracket-setup button {
-      background-color: #222;
-      color: #fff;
-      cursor: pointer;
+      font-size: 1.5em;
       font-weight: bold;
     }
-    .form button:hover, .bracket-setup button:hover {
-      background-color: #000;
+    main {
+      padding: 2em;
+      max-width: 900px;
+      margin: auto;
     }
-    .view-toggle {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .view-toggle button {
-      margin: 5px;
-      padding: 10px 20px;
+    input, button, select {
+      padding: 0.5em;
+      margin: 0.5em 0;
+      border-radius: 8px;
       border: none;
-      background-color: #222;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 5px;
+      font-size: 1em;
     }
-    .view-toggle button:hover {
-      background-color: #000;
+    button {
+      background-color: #ffce00;
+      color: #111;
+      cursor: pointer;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      background: #fffde7;
+      margin-top: 1em;
+      background-color: #222;
+      color: #fff;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #000;
+      border: 1px solid #444;
+      padding: 0.5em;
       text-align: center;
     }
-    th {
-      background-color: #fdd835;
-    }
-    #bracketView {
-      display: none;
-      text-align: center;
+    .bracket {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1em;
+      margin-top: 2em;
+      justify-content: center;
     }
     .match {
-      margin: 10px auto;
-      padding: 10px;
-      background: #fffde7;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      width: 300px;
-      cursor: pointer;
-    }
-    .match:hover {
-      background: #f1f8e9;
+      background-color: #222;
+      padding: 1em;
+      border-radius: 10px;
+      text-align: center;
+      color: #fff;
+      min-width: 120px;
     }
   </style>
 </head>
 <body>
-  <h1>SuperLiga 2025</h1>
-
-  <div class="view-toggle">
-    <button onclick="switchView('classic')">Klasyczna tabela</button>
-    <button onclick="switchView('bracket')">Drabinka UEFA</button>
-  </div>
-
-  <!-- Klasyczna tabela -->
-  <div id="classicView">
-    <div class="form">
-      <label for="teamA">Drużyna 1:</label>
-      <select id="teamA"></select>
-
-      <label for="teamB">Drużyna 2:</label>
-      <select id="teamB"></select>
-
-      <label for="score">Wynik (np. 2:1):</label>
-      <input type="text" id="score" placeholder="np. 2:1">
-
-      <label for="winner">Kto wygrał?</label>
-      <select id="winner">
-        <option value="A">Drużyna 1</option>
-        <option value="B">Drużyna 2</option>
-        <option value="R">Remis</option>
+  <header>System Ligowy</header>
+  <main>
+    <label>Wybierz tryb:
+      <select id="modeSelect">
+        <option value="classic">Klasyczna tabela</option>
+        <option value="bracket">UEFA (drabinka)</option>
       </select>
+    </label>
+    <br>
+    <label>Liczba drużyn: <input type="number" id="teamCount" min="2" max="128"></label>
+    <button onclick="generateTeamInputs()">Dalej</button>
 
-      <button onclick="addMatch()">Dodaj mecz</button>
-      <button onclick="saveTable()">Zapisz tabelę</button>
-      <button onclick="resetTable()">Nowa liga</button>
-    </div>
+    <form id="teamForm" onsubmit="startSystem(event)"></form>
 
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Drużyna</th>
-          <th>Punkty</th>
-          <th>Gole +</th>
-          <th>Gole -</th>
-          <th>Różnica</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- Drabinka UEFA -->
-  <div id="bracketView">
-    <div class="bracket-setup">
-      <label for="teamCount">Wybierz liczbę drużyn (4, 8, 16, 32, 64, 128):</label>
-      <select id="teamCount">
-        <option value="4">4</option>
-        <option value="8">8</option>
-        <option value="16">16</option>
-        <option value="32">32</option>
-        <option value="64">64</option>
-        <option value="128">128</option>
-      </select>
-
-      <div id="teamInputs"></div>
-      <button onclick="generateBracket()">Gotowe</button>
-    </div>
-    <div id="bracket"></div>
-  </div>
-
+    <div id="output"></div>
+  </main>
   <script>
-    // KLASYCZNA TABELA
-    const teams = Array.from({ length: 30 }, (_, i) => `Drużyna ${i + 1}`);
-    let stats = {}; let savedStats = null;
-    const teamASelect = document.getElementById('teamA');
-    const teamBSelect = document.getElementById('teamB');
-    const tableBody = document.getElementById('tableBody');
-
-    function init() {
-      teams.forEach(t => {
-        stats[t] = { pts: 0, scored: 0, lost: 0 };
-        teamASelect.appendChild(new Option(t, t));
-        teamBSelect.appendChild(new Option(t, t));
-      });
-      renderTable();
-    }
-
-    function addMatch() {
-      const a = teamASelect.value;
-      const b = teamBSelect.value;
-      const score = document.getElementById('score').value;
-      const winner = document.getElementById('winner').value;
-      if (!a || !b || a === b || !score.match(/^\d+:\d+$/)) return alert('Błędne dane.');
-      const [gA, gB] = score.split(':').map(Number);
-      stats[a].scored += gA; stats[a].lost += gB;
-      stats[b].scored += gB; stats[b].lost += gA;
-      if (winner === 'A') stats[a].pts += 3;
-      else if (winner === 'B') stats[b].pts += 3;
-      else { stats[a].pts += 1; stats[b].pts += 1; }
-      renderTable();
-    }
-
-    function renderTable() {
-      const sorted = Object.keys(stats).sort((t1, t2) => {
-        const s1 = stats[t1], s2 = stats[t2];
-        const d1 = s1.scored - s1.lost, d2 = s2.scored - s2.lost;
-        if (s2.pts !== s1.pts) return s2.pts - s1.pts;
-        if (d2 !== d1) return d2 - d1;
-        return s2.scored - s1.scored;
-      });
-      tableBody.innerHTML = sorted.map((t, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${t}</td>
-          <td>${stats[t].pts}</td>
-          <td>${stats[t].scored}</td>
-          <td>${stats[t].lost}</td>
-          <td>${stats[t].scored - stats[t].lost}</td>
-        </tr>`).join('');
-    }
-
-    function saveTable() { savedStats = JSON.parse(JSON.stringify(stats)); alert('Tabela zapisana!'); }
-    function resetTable() { if (confirm('Nowa liga?')) { teams.forEach(t => stats[t] = { pts: 0, scored: 0, lost: 0 }); renderTable(); } }
-    function switchView(view) {
-      document.getElementById('classicView').style.display = view === 'classic' ? 'block' : 'none';
-      document.getElementById('bracketView').style.display = view === 'bracket' ? 'block' : 'none';
-    }
-
-    // DRABINKA UEFA
-    function generateBracket() {
-      const count = parseInt(document.getElementById('teamCount').value);
-      const inputs = document.querySelectorAll('.teamName');
-      const names = Array.from(inputs).map(i => i.value).slice(0, count);
-      if (names.length !== count || names.some(n => n === '')) return alert('Wpisz wszystkie drużyny.');
-
-      const bracket = document.getElementById('bracket');
-      bracket.innerHTML = '';
-      for (let i = 0; i < names.length; i += 2) {
-        const match = document.createElement('div');
-        match.className = 'match';
-        match.textContent = `${names[i]} vs ${names[i + 1]}`;
-        match.onclick = () => editMatch(match, names[i], names[i + 1]);
-        bracket.appendChild(match);
-      }
-    }
-
-    function editMatch(matchEl, team1, team2) {
-      const form = document.createElement('div');
-      form.innerHTML = `
-        <strong>${team1} vs ${team2}</strong><br>
-        <label>Kto wygrał?</label>
-        <select id="winnerSelect">
-          <option value="${team1}">${team1}</option>
-          <option value="${team2}">${team2}</option>
-        </select>
-        <label>Wynik:</label>
-        <input type="text" id="resultInput" placeholder="np. 2:1">
-        <button onclick="submitResult(this, '${team1}', '${team2}')">Zapisz</button>
-      `;
-      matchEl.innerHTML = '';
-      matchEl.appendChild(form);
-    }
-
-    function submitResult(btn, team1, team2) {
-      const matchEl = btn.closest('.match');
-      const winner = matchEl.querySelector('#winnerSelect').value;
-      const result = matchEl.querySelector('#resultInput').value;
-      matchEl.innerHTML = `${team1} vs ${team2}<br><strong>Wygrał: ${winner} (${result})</strong>`;
-    }
-
-    document.getElementById('teamCount').addEventListener('change', () => {
-      const count = parseInt(document.getElementById('teamCount').value);
-      const container = document.getElementById('teamInputs');
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const input = document.createElement('input');
-        input.className = 'teamName';
-        input.placeholder = `Drużyna ${i + 1}`;
-        container.appendChild(input);
-      }
+    let selectedMode = 'classic';
+    document.getElementById('modeSelect').addEventListener('change', (e) => {
+      selectedMode = e.target.value;
     });
 
-    init();
-    document.getElementById('teamCount').dispatchEvent(new Event('change'));
+    function generateTeamInputs() {
+      const count = parseInt(document.getElementById('teamCount').value);
+      const form = document.getElementById('teamForm');
+      form.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
+      }
+      form.innerHTML += '<button type="submit">Utwórz</button>';
+    }
+
+    function startSystem(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const teams = [];
+      for (let pair of formData.entries()) {
+        teams.push({ name: pair[1], pts: 0, scored: 0, conceded: 0 });
+      }
+      if (selectedMode === 'classic') displayTable(teams);
+      else displayBracket(teams);
+    }
+
+    function displayTable(teams) {
+      const container = document.getElementById('output');
+      let html = '<table><tr><th>#</th><th>Drużyna</th><th>Punkty</th><th>Strzelone</th><th>Stracone</th></tr>';
+      teams.forEach((team, index) => {
+        html += `<tr><td>${index + 1}</td><td>${team.name}</td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td></tr>`;
+      });
+      html += '</table>';
+      container.innerHTML = html;
+    }
+
+    function displayBracket(teams) {
+      const container = document.getElementById('output');
+      container.innerHTML = '<div class="bracket">';
+      for (let i = 0; i < teams.length; i += 2) {
+        const team1 = teams[i]?.name || '---';
+        const team2 = teams[i + 1]?.name || '---';
+        container.innerHTML += `
+          <div class="match">
+            <div>${team1} vs ${team2}</div>
+            <input type="text" placeholder="Kto wygrał"><br>
+            <input type="text" placeholder="Wynik">
+          </div>
+        `;
+      }
+      container.innerHTML += '</div>';
+    }
   </script>
 </body>
 </html>
+
