@@ -108,7 +108,7 @@
       </label><br>
       <label>Liczba drużyn: <input type="number" id="teamCount" min="2" max="128"></label><br>
       <label>Nazwa tabeli: <input type="text" id="tableName"></label><br>
-      <button id="createButton">Utwórz tabelę</button>
+      <button id="nextButton">Dalej</button>
     </div>
 
     <div class="table-container" id="output"></div>
@@ -129,8 +129,8 @@
       selectedMode = e.target.value;
     });
 
-    // Nasłuchiwanie na kliknięcie przycisku "Utwórz tabelę"
-    document.getElementById('createButton').addEventListener('click', generateTeamInputs);
+    // Nasłuchiwanie na kliknięcie przycisku "Dalej"
+    document.getElementById('nextButton').addEventListener('click', generateTeamInputs);
 
     // Funkcja generująca pola do wprowadzenia drużyn
     function generateTeamInputs() {
@@ -141,13 +141,18 @@
         return;
       }
 
+      // Zmiana przycisku na "Stwórz tabelę"
+      document.getElementById('nextButton').innerText = 'Stwórz tabelę';
+      document.getElementById('nextButton').removeEventListener('click', generateTeamInputs); // Usuwanie poprzedniej funkcji
+      document.getElementById('nextButton').addEventListener('click', startSystem); // Dodanie nowej funkcji
+
       // Tworzenie inputów dla drużyn
       const form = document.getElementById('form-container');
       form.innerHTML = '';  // Usuwanie poprzednich danych formularza
       for (let i = 0; i < count; i++) {
         form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
       }
-      form.innerHTML += '<button type="button" onclick="startSystem()">Utwórz tabelę</button>';
+      form.innerHTML += '<button type="button" onclick="startSystem()">Stwórz tabelę</button>';
     }
 
     // Funkcja do tworzenia tabeli
@@ -171,7 +176,7 @@
 
       updateSavedTables();
       document.getElementById('form-container').innerHTML = ''; // Ukrycie formularza
-      document.getElementById('createButton').style.display = 'none'; // Ukrycie przycisku "Utwórz"
+      document.getElementById('nextButton').style.display = 'none'; // Ukrycie przycisku "Dalej"
     }
 
     // Funkcja do wyświetlania tabeli klasycznej
@@ -252,6 +257,16 @@
       }
 
       // Przechowywanie rozegranych meczów
+      home.matches.push({ opponent: away.name, score: `${homeGoals}-${awayGoals}`, result: winner === home.name ? 'home' : 'away' });
+      away.matches.push({ opponent: home.name, score: `${awayGoals}-${homeGoals}`, result: winner === away.name ? 'away' : 'home' });
+
+      // Aktualizacja tabeli
+      displayTable(table.teams, table.name);
+    }
+  </script>
+</body>
+</html>
+
      
 
 
