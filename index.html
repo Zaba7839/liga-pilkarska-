@@ -141,12 +141,11 @@
       for (let i = 0; i < count; i++) {
         form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
       }
-      form.innerHTML += '<button type="submit" onclick="startSystem(event)">Utwórz</button>';
+      form.innerHTML += '<button type="button" onclick="startSystem()">Utwórz</button>';  // Naprawione: zmieniono z "submit" na "button"
     }
 
-    function startSystem(e) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
+    function startSystem() {
+      const formData = new FormData(document.querySelector('.form-container'));
       const teams = [];
       for (let pair of formData.entries()) {
         teams.push({ name: pair[1], pts: 0, scored: 0, conceded: 0, matches: [] });
@@ -266,6 +265,7 @@
   </script>
 </body>
 </html>
+
 
 
 
