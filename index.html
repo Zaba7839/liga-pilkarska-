@@ -109,7 +109,7 @@
       <br>
       <label>Liczba drużyn: <input type="number" id="teamCount" min="2" max="128"></label><br>
       <label>Nazwa tabeli: <input type="text" id="tableName"></label><br>
-      <button id="createButton">Utwórz</button>
+      <button id="createButton">Utwórz tabelę</button>
     </div>
 
     <div class="table-container" id="output"></div>
@@ -129,7 +129,7 @@
       selectedMode = e.target.value;
     });
 
-    // Nasłuchiwanie na kliknięcie przycisku "Utwórz"
+    // Nasłuchiwanie na kliknięcie przycisku "Utwórz tabelę"
     document.getElementById('createButton').addEventListener('click', generateTeamInputs);
 
     function generateTeamInputs() {
@@ -169,7 +169,7 @@
 
       updateSavedTables();
       document.getElementById('form-container').innerHTML = ''; // Ukrycie formularza
-      document.getElementById('createButton').style.display = 'block'; // Przywrócenie przycisku "Utwórz"
+      document.getElementById('createButton').style.display = 'none'; // Ukrycie przycisku "Utwórz"
     }
 
     function displayTable(teams, tableName) {
@@ -184,7 +184,7 @@
       teams.forEach((team, index) => {
         html += `<tr><td>${index + 1}</td><td><button onclick="showTeamDetails(${index}, '${tableName}')">${team.name}</button></td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td><td>${team.matches.length}</td><td><button onclick="addResultForm(${index}, '${tableName}')">Dodaj wynik</button></td></tr>`;
       });
-      html += '</table><button onclick="nextRound(teams)">Zaktualizuj</button><button onclick="addResultForm()">Dodaj wynik</button>';
+      html += '</table><button onclick="nextRound(teams)">Zaktualizuj</button>';
       container.innerHTML = html;
     }
 
@@ -215,62 +215,47 @@
       }
 
       const table = tables.find(table => table.name === tableName);
-      const home = table.teams.find(t => t.name === homeTeam);
-      const away = table.teams.find(t => t.name === awayTeam);
+      const home = table.teams.find(team => team.name === homeTeam);
+      const away = table.teams.find(team => team.name === awayTeam);
 
-      if (!home || !away) {
-        alert('Nie znaleziono drużyn!');
-        return;
-      }
+      const [homeGoals, awayGoals] = result.split('-').map(Number);
 
-      // Aktualizacja statystyk drużyn
-      const [homeScore, awayScore] = result.split('-').map(score => parseInt(score.trim()));
+      // Aktualizowanie wyników
+      home.scored += homeGoals;
+      away.scored += awayGoals;
+      home.conceded += awayGoals;
+      away.conceded += homeGoals;
 
-      home.scored += homeScore;
-      away.scored += awayScore;
-      home.conceded += awayScore;
-      away.conceded += homeScore;
-
-      if (homeScore > awayScore) {
+      if (homeGoals > awayGoals) {
         home.pts += 3;
-      } else if (awayScore > homeScore) {
+      } else if (awayGoals > homeGoals) {
         away.pts += 3;
       } else {
         home.pts += 1;
         away.pts += 1;
       }
 
-      // Dodanie meczu do drużyn
-      home.matches.push({ opponent: away.name, result: 'Wygrał', score: result });
-      away.matches.push({ opponent: home.name, result: 'Przegrał', score: result });
+      // Przechowywanie rozegranych meczów
+      home.matches.push({ opponent: away.name, result: `${homeGoals}-${awayGoals}` });
+      away.matches.push({ opponent: home.name, result: `${awayGoals}-${homeGoals}` });
 
+      // Zaktualizowanie tabeli
       displayTable(table.teams, tableName);
-    }
-
-    function nextRound(teams) {
-      teams.forEach(team => {
-        team.matches = [];
-      });
-      displayTable(teams, currentTable.name);
     }
 
     function updateSavedTables() {
       const tableList = document.getElementById('tableList');
       tableList.innerHTML = '';
-      tables.forEach((table) => {
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `<button onclick="showTableDetails('${table.name}')">${table.name}</button>`;
-        tableList.appendChild(listItem);
+      tables.forEach(table => {
+        const li = document.createElement('li');
+        li.textContent = table.name;
+        tableList.appendChild(li);
       });
-    }
-
-    function showTableDetails(name) {
-      const table = tables.find(t => t.name === name);
-      displayTable(table.teams, name);
     }
   </script>
 </body>
 </html>
+
 
 
 
