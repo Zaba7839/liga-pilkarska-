@@ -23,7 +23,7 @@
       display: flex;
       justify-content: space-between;
       padding: 2em;
-      max-width: 900px;
+      max-width: 1200px;
       margin: auto;
     }
     .form-container {
@@ -31,6 +31,7 @@
     }
     .table-container {
       width: 50%;
+      overflow-x: auto;
     }
     input, button, select {
       padding: 0.5em;
@@ -50,10 +51,11 @@
       margin-top: 1em;
       background-color: #222;
       color: #fff;
+      font-size: 1.2em;
     }
     th, td {
       border: 1px solid #444;
-      padding: 0.5em;
+      padding: 1em;
       text-align: center;
     }
     .bracket {
@@ -97,7 +99,7 @@
 <body>
   <header>System Ligowy</header>
   <main>
-    <div class="form-container">
+    <div class="form-container" id="form-container">
       <label>Wybierz tryb:
         <select id="modeSelect">
           <option value="classic">Klasyczna tabela</option>
@@ -108,8 +110,6 @@
       <label>Liczba drużyn: <input type="number" id="teamCount" min="2" max="128"></label><br>
       <label>Nazwa tabeli: <input type="text" id="tableName"></label><br>
       <button onclick="generateTeamInputs()">Dalej</button>
-
-      <form id="teamForm" onsubmit="startSystem(event)"></form>
     </div>
 
     <div class="table-container" id="output"></div>
@@ -136,12 +136,12 @@
         return;
       }
       
-      const form = document.getElementById('teamForm');
+      const form = document.getElementById('form-container');
       form.innerHTML = '';
       for (let i = 0; i < count; i++) {
         form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
       }
-      form.innerHTML += '<button type="submit">Utwórz</button>';
+      form.innerHTML += '<button type="submit" onclick="startSystem(event)">Utwórz</button>';
     }
 
     function startSystem(e) {
@@ -164,10 +164,7 @@
       }
 
       updateSavedTables();
-      document.getElementById('teamForm').innerHTML = ''; // Ukrycie formularza
-      document.getElementById('modeSelect').disabled = true; // Zablokowanie trybu po utworzeniu
-      document.getElementById('teamCount').disabled = true;
-      document.getElementById('tableName').disabled = true;
+      document.getElementById('form-container').innerHTML = ''; // Ukrycie formularza
     }
 
     function displayTable(teams, tableName) {
@@ -182,7 +179,7 @@
       teams.forEach((team, index) => {
         html += `<tr><td>${index + 1}</td><td><button onclick="showTeamDetails(${index}, '${tableName}')">${team.name}</button></td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td><td>${team.matches.length}</td><td><button onclick="addResultForm(${index}, '${tableName}')">Dodaj wynik</button></td></tr>`;
       });
-      html += '</table><button onclick="nextRound(teams)">Zaktualizuj</button>';
+      html += '</table><button onclick="nextRound(teams)">Zaktualizuj</button><button onclick="addResultForm()">Dodaj wynik</button>';
       container.innerHTML = html;
     }
 
@@ -246,44 +243,32 @@
     }
 
     function nextRound(teams) {
-      const container = document.getElementById('output');
-      container.innerHTML = '<h3>Przeniesiono do następnej rundy!</h3>';
-      displayTable(teams, "Kolejna runda"); // Zaktualizowana tabela po przeniesieniu do kolejnej rundy
+      teams.forEach(team => {
+        team.matches = [];
+      });
+      displayTable(teams, currentTable.name);
     }
 
     function updateSavedTables() {
       const tableList = document.getElementById('tableList');
       tableList.innerHTML = '';
-      tables.forEach(table => {
-        tableList.innerHTML += `<li>${table.name}</li>`;
+      tables.forEach((table) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<button onclick="showTableDetails('${table.name}')">${table.name}</button>`;
+        tableList.appendChild(listItem);
       });
     }
 
-    function displayBracket(teams) {
-      const container = document.getElementById('output');
-      container.innerHTML = '<div class="bracket">';
-      for (let i = 0; i < teams.length; i += 2) {
-        const team1 = teams[i]?.name || '---';
-        const team2 = teams[i + 1]?.name || '---';
-        container.innerHTML += `
-          <div class="match">
-            <div>${team1} vs ${team2}</div>
-            <input type="text" placeholder="Kto wygrał"><br>
-            <input type="text" placeholder="Wynik">
-          </div>
-        `;
-      }
-      container.innerHTML += '</div><button onclick="nextRoundBracket(teams)">Zaktualizuj</button>';
-    }
-
-    function nextRoundBracket(teams) {
-      const container = document.getElementById('output');
-      container.innerHTML = '<h3>Przeniesiono do kolejnej rundy!</h3>';
-      displayBracket(teams); // Kolejna runda w drabince
+    function showTableDetails(name) {
+      const table = tables.find(t => t.name === name);
+      displayTable(table.teams, name);
     }
   </script>
 </body>
 </html>
+
+
+
 
 
 
