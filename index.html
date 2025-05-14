@@ -258,4 +258,11 @@
 
       // Przechowywanie rozegranych meczów
       home.matches.push({ opponent: away.name, score: `${homeGoals}-${awayGoals}`, result: winner === home.name ? 'home' : 'away' });
-      away.matches.push({ opponent:
+      away.matches.push({ opponent: home.name, score: `${awayGoals}-${homeGoals}`, result: winner === away.name ? 'home' : 'away' });
+
+      displayTable(table.teams, tableName); // Zaktualizowanie tabeli
+    }
+  </script>
+</body>
+</html>
+
