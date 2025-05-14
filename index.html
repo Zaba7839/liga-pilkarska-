@@ -141,8 +141,8 @@
         return;
       }
 
-      // Zmiana przycisku na "Stwórz tabelę"
-      document.getElementById('nextButton').innerText = 'Stwórz tabelę';
+      // Zmiana przycisku na "Stwórz"
+      document.getElementById('nextButton').innerText = 'Stwórz';
       document.getElementById('nextButton').removeEventListener('click', generateTeamInputs); // Usuwanie poprzedniej funkcji
       document.getElementById('nextButton').addEventListener('click', startSystem); // Dodanie nowej funkcji
 
@@ -152,7 +152,7 @@
       for (let i = 0; i < count; i++) {
         form.innerHTML += `<input type="text" name="team${i}" placeholder="Nazwa drużyny ${i + 1}" required><br>`;
       }
-      form.innerHTML += '<button type="button" onclick="startSystem()">Stwórz tabelę</button>';
+      form.innerHTML += '<button type="button" onclick="startSystem()">Stwórz</button>';
     }
 
     // Funkcja do tworzenia tabeli
@@ -258,27 +258,4 @@
 
       // Przechowywanie rozegranych meczów
       home.matches.push({ opponent: away.name, score: `${homeGoals}-${awayGoals}`, result: winner === home.name ? 'home' : 'away' });
-      away.matches.push({ opponent: home.name, score: `${awayGoals}-${homeGoals}`, result: winner === away.name ? 'away' : 'home' });
-
-      // Aktualizacja tabeli
-      displayTable(table.teams, table.name);
-    }
-  </script>
-</body>
-</html>
-
-     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      away.matches.push({ opponent:
