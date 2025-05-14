@@ -124,6 +124,7 @@
     let selectedMode = 'classic';
     let tables = []; // Przechowywanie tabel
     let currentTable = null; // Wybrana aktualna tabela
+
     document.getElementById('modeSelect').addEventListener('change', (e) => {
       selectedMode = e.target.value;
     });
@@ -168,6 +169,7 @@
 
       updateSavedTables();
       document.getElementById('form-container').innerHTML = ''; // Ukrycie formularza
+      document.getElementById('createButton').style.display = 'block'; // Przywrócenie przycisku "Utwórz"
     }
 
     function displayTable(teams, tableName) {
@@ -269,6 +271,7 @@
   </script>
 </body>
 </html>
+
 
 
 
