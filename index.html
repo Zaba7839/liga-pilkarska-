@@ -105,8 +105,7 @@
           <option value="classic">Klasyczna tabela</option>
           <option value="bracket">UEFA (drabinka)</option>
         </select>
-      </label>
-      <br>
+      </label><br>
       <label>Liczba drużyn: <input type="number" id="teamCount" min="2" max="128"></label><br>
       <label>Nazwa tabeli: <input type="text" id="tableName"></label><br>
       <button id="createButton">Utwórz tabelę</button>
@@ -125,6 +124,7 @@
     let tables = []; // Przechowywanie tabel
     let currentTable = null; // Wybrana aktualna tabela
 
+    // Nasłuchiwanie na zmianę trybu
     document.getElementById('modeSelect').addEventListener('change', (e) => {
       selectedMode = e.target.value;
     });
@@ -132,6 +132,7 @@
     // Nasłuchiwanie na kliknięcie przycisku "Utwórz tabelę"
     document.getElementById('createButton').addEventListener('click', generateTeamInputs);
 
+    // Funkcja generująca pola do wprowadzenia drużyn
     function generateTeamInputs() {
       const count = parseInt(document.getElementById('teamCount').value);
       const name = document.getElementById('tableName').value.trim();
@@ -149,6 +150,7 @@
       form.innerHTML += '<button type="button" onclick="startSystem()">Utwórz tabelę</button>';
     }
 
+    // Funkcja do tworzenia tabeli
     function startSystem() {
       const formData = new FormData(document.querySelector('.form-container'));
       const teams = [];
@@ -172,6 +174,7 @@
       document.getElementById('createButton').style.display = 'none'; // Ukrycie przycisku "Utwórz"
     }
 
+    // Funkcja do wyświetlania tabeli klasycznej
     function displayTable(teams, tableName) {
       const container = document.getElementById('output');
       teams.sort((a, b) => {
@@ -188,6 +191,18 @@
       container.innerHTML = html;
     }
 
+    // Funkcja do aktualizacji zapisanych tabel
+    function updateSavedTables() {
+      const tableList = document.getElementById('tableList');
+      tableList.innerHTML = '';
+      tables.forEach(table => {
+        const li = document.createElement('li');
+        li.textContent = table.name;
+        tableList.appendChild(li);
+      });
+    }
+
+    // Funkcja do dodawania wyników
     function addResultForm(index, tableName) {
       const team = tables.find(table => table.name === tableName).teams[index];
       const container = document.getElementById('output');
@@ -203,6 +218,7 @@
       `;
     }
 
+    // Funkcja do aktualizacji wyników i tabeli
     function updateResult(index, tableName) {
       const homeTeam = document.getElementById('homeTeam').value;
       const awayTeam = document.getElementById('awayTeam').value;
@@ -236,25 +252,8 @@
       }
 
       // Przechowywanie rozegranych meczów
-      home.matches.push({ opponent: away.name, result: `${homeGoals}-${awayGoals}` });
-      away.matches.push({ opponent: home.name, result: `${awayGoals}-${homeGoals}` });
+     
 
-      // Zaktualizowanie tabeli
-      displayTable(table.teams, tableName);
-    }
-
-    function updateSavedTables() {
-      const tableList = document.getElementById('tableList');
-      tableList.innerHTML = '';
-      tables.forEach(table => {
-        const li = document.createElement('li');
-        li.textContent = table.name;
-        tableList.appendChild(li);
-      });
-    }
-  </script>
-</body>
-</html>
 
 
 
