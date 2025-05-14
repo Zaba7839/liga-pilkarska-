@@ -123,6 +123,7 @@
   <script>
     let selectedMode = 'classic';
     let tables = []; // Przechowywanie tabel
+    let currentTable = null; // Wybrana aktualna tabela
     document.getElementById('modeSelect').addEventListener('change', (e) => {
       selectedMode = e.target.value;
     });
@@ -154,6 +155,8 @@
       const tableName = document.getElementById('tableName').value;
       tables.push({ name: tableName, teams: teams });
 
+      currentTable = tables[tables.length - 1];
+
       if (selectedMode === 'classic') {
         displayTable(teams, tableName);
       } else {
@@ -175,23 +178,71 @@
         return a.conceded - b.conceded;
       });
 
-      let html = `<h3>${tableName}</h3><table><tr><th>#</th><th>Drużyna</th><th>Punkty</th><th>Strzelone</th><th>Stracone</th><th>Rozegrała mecze</th></tr>`;
+      let html = `<h3>${tableName}</h3><table><tr><th>#</th><th>Drużyna</th><th>Punkty</th><th>Strzelone</th><th>Stracone</th><th>Rozegrała mecze</th><th>Dodaj wynik</th></tr>`;
       teams.forEach((team, index) => {
-        html += `<tr><td>${index + 1}</td><td><button onclick="showTeamDetails(${index}, '${tableName}')">${team.name}</button></td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td><td>${team.matches.length}</td></tr>`;
+        html += `<tr><td>${index + 1}</td><td><button onclick="showTeamDetails(${index}, '${tableName}')">${team.name}</button></td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td><td>${team.matches.length}</td><td><button onclick="addResultForm(${index}, '${tableName}')">Dodaj wynik</button></td></tr>`;
       });
-      html += '</table><button onclick="nextRound(teams)">Gotowe</button>';
+      html += '</table><button onclick="nextRound(teams)">Zaktualizuj</button>';
       container.innerHTML = html;
     }
 
-    function showTeamDetails(index, tableName) {
+    function addResultForm(index, tableName) {
       const team = tables.find(table => table.name === tableName).teams[index];
       const container = document.getElementById('output');
-      let details = `<div class="team-detail"><h3>${team.name}</h3><ul>`;
-      team.matches.forEach(match => {
-        details += `<li>${match.opponent}: ${match.result} (Wynik: ${match.score})</li>`;
-      });
-      details += '</ul></div>';
-      container.innerHTML = details;
+      container.innerHTML = `
+        <div>
+          <h3>Wynik meczu: ${team.name}</h3>
+          <label>Gospodarze: <input type="text" id="homeTeam" placeholder="Nazwa drużyny gospodarzy"></label><br>
+          <label>Goście: <input type="text" id="awayTeam" placeholder="Nazwa drużyny gości"></label><br>
+          <label>Wynik: <input type="text" id="result" placeholder="np. 3-2"></label><br>
+          <label>Kto wygrał: <input type="text" id="winner" placeholder="Nazwa drużyny"></label><br>
+          <button onclick="updateResult(${index}, '${tableName}')">Zaktualizuj</button>
+        </div>
+      `;
+    }
+
+    function updateResult(index, tableName) {
+      const homeTeam = document.getElementById('homeTeam').value;
+      const awayTeam = document.getElementById('awayTeam').value;
+      const result = document.getElementById('result').value;
+      const winner = document.getElementById('winner').value;
+
+      if (!homeTeam || !awayTeam || !result || !winner) {
+        alert('Wszystkie pola muszą być wypełnione!');
+        return;
+      }
+
+      const table = tables.find(table => table.name === tableName);
+      const home = table.teams.find(t => t.name === homeTeam);
+      const away = table.teams.find(t => t.name === awayTeam);
+
+      if (!home || !away) {
+        alert('Nie znaleziono drużyn!');
+        return;
+      }
+
+      // Aktualizacja statystyk drużyn
+      const [homeScore, awayScore] = result.split('-').map(score => parseInt(score.trim()));
+
+      home.scored += homeScore;
+      away.scored += awayScore;
+      home.conceded += awayScore;
+      away.conceded += homeScore;
+
+      if (homeScore > awayScore) {
+        home.pts += 3;
+      } else if (awayScore > homeScore) {
+        away.pts += 3;
+      } else {
+        home.pts += 1;
+        away.pts += 1;
+      }
+
+      // Dodanie meczu do drużyn
+      home.matches.push({ opponent: away.name, result: 'Wygrał', score: result });
+      away.matches.push({ opponent: home.name, result: 'Przegrał', score: result });
+
+      displayTable(table.teams, tableName);
     }
 
     function nextRound(teams) {
@@ -222,7 +273,7 @@
           </div>
         `;
       }
-      container.innerHTML += '</div><button onclick="nextRoundBracket(teams)">Gotowe</button>';
+      container.innerHTML += '</div><button onclick="nextRoundBracket(teams)">Zaktualizuj</button>';
     }
 
     function nextRoundBracket(teams) {
@@ -233,6 +284,7 @@
   </script>
 </body>
 </html>
+
 
 
 
