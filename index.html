@@ -64,6 +64,12 @@
       color: #fff;
       min-width: 120px;
     }
+    .team-detail {
+      background-color: #333;
+      padding: 1em;
+      margin-top: 1em;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -104,7 +110,7 @@
       const formData = new FormData(e.target);
       const teams = [];
       for (let pair of formData.entries()) {
-        teams.push({ name: pair[1], pts: 0, scored: 0, conceded: 0 });
+        teams.push({ name: pair[1], pts: 0, scored: 0, conceded: 0, matches: [] });
       }
       if (selectedMode === 'classic') displayTable(teams);
       else displayBracket(teams);
@@ -112,12 +118,35 @@
 
     function displayTable(teams) {
       const container = document.getElementById('output');
-      let html = '<table><tr><th>#</th><th>Drużyna</th><th>Punkty</th><th>Strzelone</th><th>Stracone</th></tr>';
-      teams.forEach((team, index) => {
-        html += `<tr><td>${index + 1}</td><td>${team.name}</td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td></tr>`;
+      teams.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.scored !== a.scored) return b.scored - a.scored;
+        return a.conceded - b.conceded;
       });
-      html += '</table>';
+
+      let html = '<table><tr><th>#</th><th>Drużyna</th><th>Punkty</th><th>Strzelone</th><th>Stracone</th><th>Rozegrała mecze</th></tr>';
+      teams.forEach((team, index) => {
+        html += `<tr><td>${index + 1}</td><td><button onclick="showTeamDetails(${index})">${team.name}</button></td><td>${team.pts}</td><td>${team.scored}</td><td>${team.conceded}</td><td>${team.matches.length}</td></tr>`;
+      });
+      html += '</table><button onclick="nextRound(teams)">Gotowe</button>';
       container.innerHTML = html;
+    }
+
+    function showTeamDetails(index) {
+      const team = teams[index];
+      const container = document.getElementById('output');
+      let details = `<div class="team-detail"><h3>${team.name}</h3><ul>`;
+      team.matches.forEach(match => {
+        details += `<li>${match.opponent}: ${match.result} (Wynik: ${match.score})</li>`;
+      });
+      details += '</ul></div>';
+      container.innerHTML = details;
+    }
+
+    function nextRound(teams) {
+      const container = document.getElementById('output');
+      container.innerHTML = '<h3>Przeniesiono do następnej rundy!</h3>';
+      displayTable(teams); // Zaktualizowana tabela po przeniesieniu do kolejnej rundy
     }
 
     function displayBracket(teams) {
@@ -134,9 +163,16 @@
           </div>
         `;
       }
-      container.innerHTML += '</div>';
+      container.innerHTML += '</div><button onclick="nextRoundBracket(teams)">Gotowe</button>';
+    }
+
+    function nextRoundBracket(teams) {
+      const container = document.getElementById('output');
+      container.innerHTML = '<h3>Przeniesiono do kolejnej rundy!</h3>';
+      displayBracket(teams); // Kolejna runda w drabince
     }
   </script>
 </body>
 </html>
+
 
